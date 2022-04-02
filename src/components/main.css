@@ -1,0 +1,19 @@
+.content {
+  border: 1px solid black;
+}
+
+.title {
+  text-transform: capitalize;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+label {
+  text-transform: capitalize;
+}
+.error_msg {
+  color: red;
+  margin-top: -10px;
+  text-transform: capitalize;
+  font-size: 0.8rem;
+}
