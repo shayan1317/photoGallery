@@ -10,6 +10,7 @@ function App() {
       <Title />
       <Uploadfrom />
       <Imagegallery />
+      <Main />
     </div>
   );
 }
