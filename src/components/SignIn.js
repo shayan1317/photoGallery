@@ -2,37 +2,36 @@ import React, { useEffect, useState } from "react";
 import ReadingData from "./ReadindData";
 
 function SignIn() {
-  const { docs } = ReadingData("users");
+  // const { docs } = ReadingData("users");
   const [user_name, setusername] = useState("");
   const [message, setMessage] = useState("");
   const [pass, setpass] = useState("");
 
   const readData = (e) => {
-    setusername(e.target[0].value);
-    setpass(e.target[1].value);
-    if ((user_name, pass) == "") {
-      setMessage("username/password could not be empty");
-    } else {
-      setMessage(" ");
-    }
+    // setusername(e.target[0].value);
+    // setpass(e.target[1].value);
+    // if ((user_name, pass) == "") {
+    //   setMessage("username/password could not be empty");
+    // } else {
+    //   setMessage(" ");
+    // }
   };
 
   useEffect(() => {
-    if (docs.length > 0) {
-      for (let i = 0; i < docs.length; i++) {
-        if (
-          (user_name, pass) != "" &&
-          docs[i].userName == user_name &&
-          docs[i].password == pass
-        ) {
-          setMessage("Successefully Signed In");
-          break;
-        } else {
-          setMessage("User Not registered!Please register yourself");
-        }
-      }
-    }
-
+    // if (docs.length > 0) {
+    //   for (let i = 0; i < docs.length; i++) {
+    //     if (
+    //       (user_name, pass) != "" &&
+    //       docs[i].userName == user_name &&
+    //       docs[i].password == pass
+    //     ) {
+    //       setMessage("Successefully Signed In");
+    //       break;
+    //     } else {
+    //       setMessage("User Not registered!Please register yourself");
+    //     }
+    //   }
+    // }
     // docs.map((doc) => {
     //   console.log(doc);
     //   console.log(user_name, pass);

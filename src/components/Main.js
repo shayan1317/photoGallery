@@ -16,35 +16,6 @@ function Main() {
   //   );
 
   const [registeredUser, SetRegisteredUser] = useState(false);
-  const SubmitToDataBase = async (data) => {
-    const { name, userName, password, email } = data;
-    if (name || userName || password || email) {
-      console.log("data", data);
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-        const user = userCredential.user;
-        console.log("user", user);
-        let storageData = { email, accessToken: user?.accessToken, name };
-        localStorage.setItem("user", storageData);
-        await addDoc(collection(db, "users"), {
-          name: name,
-          email: email,
-          username: userName,
-          password: password,
-        });
-
-        console.log("useradded");
-      } catch (err) {
-        console.log("err", err);
-      }
-    }
-  };
 
   // useEffect(() => {
   //   console.log(registeredUser);
