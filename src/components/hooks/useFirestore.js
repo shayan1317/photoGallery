@@ -1,21 +1,20 @@
 import { useState, useEffect } from "react";
-import { projectFirestore } from "../../firebase/config";
-
+import { db } from "../../firebase/config";
+import { getDocs } from "firebase/firestore";
 const useFirestore = (collection) => {
   const [docs, setDocs] = useState([]);
   useEffect(() => {
-    projectFirestore
-      .collection(collection)
-      .orderBy("createdAt", "desc")
-      .onSnapshot((each_data) => {
-        const images_data = [];
+    const fetchFiles = async () => {
+      const querySnapshot = await getDocs(collection(db, "files"));
+      const fileData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setDocs(fileData);
+    };
 
-        each_data.forEach((doc) => {
-          images_data.push({ ...doc.data(), id: doc.id });
-        });
-        setDocs(images_data);
-      });
-  }, [collection]);
+    fetchFiles();
+  }, []);
   return { docs };
 };
 

@@ -1,19 +1,19 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import {
-  projectStorage,
-  projectFirestore,
-  timestamp,
-} from "../../firebase/config";
+import { projectStorage, db } from "../../firebase/config";
+import { addDoc, serverTimestamp, collection } from "firebase/firestore";
+import { uploadBytesResumable, ref, getDownloadURL } from "firebase/storage";
 function useStorage(file) {
   const [progress, setProgress] = useState("");
   const [error, setError] = useState(null);
   const [url, setUrl] = useState(null);
 
   useEffect(() => {
-    const storageRef = projectStorage.ref(`images/${file.name}`);
-    const collectionRef = projectFirestore.collection("images");
-    storageRef.put(file).on(
+    if (!file) return;
+    const storageRef = ref(projectStorage, `uploads/${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
       "state_changed",
       (snap) => {
         const percentage = (snap.bytesTransferred / snap.totalBytes) * 100;
@@ -23,10 +23,12 @@ function useStorage(file) {
         setError(error);
       },
       async () => {
-        const url = await storageRef.getDownloadURL();
+        const url = await getDownloadURL(uploadTask?.snapshot?.ref);
         setUrl(url);
-        const createdAt = timestamp();
-        collectionRef.add({ url, createdAt });
+        await addDoc(collection(db, "files"), {
+          url: url,
+          createdAt: serverTimestamp(),
+        });
       }
     );
   }, [file]);

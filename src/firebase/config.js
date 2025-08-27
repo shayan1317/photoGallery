@@ -1,6 +1,8 @@
-import firebase from "firebase/compat/app";
-import "firebase/compat/storage";
-import "firebase/compat/firestore";
+import { initializeApp } from "firebase/app";
+import { getStorage } from "firebase/storage";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth"; // 👈 import auth
+
 const firebaseConfig = {
   apiKey: "AIzaSyAES0pVLB1XlEd5hxijhg8pHnkpGFDDDJA",
   authDomain: "photogallery-ff74a.firebaseapp.com",
@@ -11,8 +13,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const projectStorage = firebase.storage();
-const projectFirestore = firebase.firestore();
-const timestamp = firebase.firestore.FieldValue.serverTimestamp;
-export { projectFirestore, projectStorage, timestamp };
+const app = initializeApp(firebaseConfig);
+
+// Services
+const projectStorage = getStorage(app);
+const db = getFirestore(app);
+const auth = getAuth(app); // 👈 auth instance
+
+// Export
+export { db, projectStorage, auth };
