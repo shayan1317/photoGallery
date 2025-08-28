@@ -1,43 +1,45 @@
-import React from "react";
-import Title from "./components/Title";
-import Imagegallery from "./components/Imagegallery";
-import Main from "./components/Main";
-import Uploadfrom from "./components/Uploadfrom";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import SignIn from "./components/SignIn";
-import SignUP from "./components/SignUP";
-import { useNavigate } from "react-router-dom"; // Uncomment when using with React Router
-import { useState, useEffect } from "react";
-// const useNavigate = () => {
-//   return (path) => {
-//     console.log(`Navigating to: ${path}`);
-//     // In your real app, this will actually navigate
-//   };
-// };
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./app.css";
 import Home from "./pages/Home";
+import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import AuthProvider from "./components/AuthProvider";
+import ProtectedRoutes from "./components/ProtectedRoutes";
 function App() {
   // const navigate = useNavigate();
 
   return (
     <Router>
-      <div className="App">
-        <Routes>
-          {/* Home Page */}
-          <Route path="/" element={<Home />} />
+      <AuthProvider>
+        <div className="App">
+          <Routes>
+            {/* Home Page */}
+            <Route path="/" element={<Home />} />
 
-          {/* Sign Up Page */}
-          <Route path="/signup" element={<Signup />} />
+            {/* Sign Up Page */}
+            <Route path="/signup" element={<Signup />} />
 
-          {/* Sign In Page */}
-          <Route path="/signin" element={<SignIn />} />
+            {/* Sign In Page */}
+            <Route path="/signin" element={<Signin />} />
 
-          {/* Dashboard Page */}
-          <Route path="/dashboard" element={<Main />} />
-        </Routes>
-      </div>
+            {/* Dashboard Page */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoutes>
+                  <Dashboard />
+                </ProtectedRoutes>
+              }
+            />
+          </Routes>
+        </div>
+      </AuthProvider>
+
+      <ToastContainer />
     </Router>
   );
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import Banner from "../components/Banner";
 import Features from "../components/Features";
-
+import CallToAction from "../components/CallToAction.jsx";
 import { WhyChooseUs } from "../components/WhyChooseUs";
 import Footer from "../components/Footer";
 import Testimonials from "../components/Testimonials.jsx";
@@ -102,7 +102,7 @@ const Home = () => {
       {/* Testimonials Section */}
       <Testimonials testimonials={testimonials} />
       {/* CTA Section */}
-      <CTA handleSignUp={handleSignUp} handleLogin={handleLogin} />
+      <CallToAction handleSignUp={handleSignUp} handleLogin={handleLogin} />
       <WhyChooseUs features={features} currentFeature={currentFeature} />
       {/* Footer */}
       <Footer />

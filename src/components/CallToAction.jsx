@@ -1,6 +1,6 @@
 import React from "react";
 
-const CTA = ({ handleLogin, handleSignUp }) => {
+const CallToAction = ({ handleLogin, handleSignUp }) => {
   return (
     <section className="cta">
       <div className="container">
@@ -31,4 +31,4 @@ const CTA = ({ handleLogin, handleSignUp }) => {
   );
 };
 
-export default CTA;
+export default CallToAction;

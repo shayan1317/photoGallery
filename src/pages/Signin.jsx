@@ -1,16 +1,14 @@
-import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../firebase/config";
-import { addDoc, collection } from "firebase/firestore";
-import { styles } from "./styles";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
-const Signup = () => {
-  const navigate = useNavigate();
+import { auth } from "../firebase/config";
+import { styles } from "./styles";
+import { Navigate, useNavigate } from "react-router-dom";
+const Signin = () => {
   // Local state banaya for controlled inputs
-  const [name, setName] = useState("");
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [userName, setUserName] = useState("");
+
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -19,13 +17,13 @@ const Signup = () => {
     e.preventDefault();
 
     // Basic validation
-    if (!name || !email || !userName || !password) {
+    if (!email || !password) {
       setError("All fields are required!");
       return;
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
+      const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
@@ -33,15 +31,14 @@ const Signup = () => {
 
       const user = userCredential.user;
       console.log("user", user);
-      let storageData = { email, accessToken: user?.accessToken, name };
+      let storageData = {
+        email,
+        accessToken: user?.accessToken,
+        name: "shayan",
+      };
       localStorage.setItem("user", storageData);
-      await addDoc(collection(db, "users"), {
-        name: name,
-        email: email,
-        username: userName,
-        password: password,
-      });
-      toast.success("User registered successfully", {
+
+      toast.success("User logged in successfully", {
         position: "top-right",
         autoClose: 3000, // 3 seconds
         hideProgressBar: false,
@@ -49,7 +46,7 @@ const Signup = () => {
         pauseOnHover: true,
         draggable: true,
       });
-      console.log("useradded");
+      navigate("/dashboard");
     } catch (err) {
       console.log("err", err);
     }
@@ -73,43 +70,12 @@ const Signup = () => {
 
         {/* Header */}
         <div style={styles.header}>
-          <h2 style={styles.title}>Create Account</h2>
-          <p style={styles.subtitle}>Join us and get started today</p>
+          <h2 style={styles.title}>Sign In </h2>
+          {/* <p style={styles.subtitle}>Join us and get started today</p> */}
         </div>
 
         {/* Form */}
         <div style={styles.form}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Full Name</label>
-            <input
-              type="text"
-              style={styles.input}
-              placeholder="Enter your full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onFocus={(e) => {
-                e.target.style.borderColor = styles.inputFocus.borderColor;
-                e.target.style.background = styles.inputFocus.background;
-                e.target.style.boxShadow = styles.inputFocus.boxShadow;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "#e5e7eb";
-                e.target.style.background = "#f9fafb";
-                e.target.style.boxShadow = "none";
-              }}
-              onMouseEnter={(e) => {
-                if (document.activeElement !== e.target) {
-                  e.target.style.borderColor = styles.inputHover.borderColor;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (document.activeElement !== e.target) {
-                  e.target.style.borderColor = "#e5e7eb";
-                }
-              }}
-            />
-          </div>
-
           <div style={styles.formGroup}>
             <label style={styles.label}>Email Address</label>
             <input
@@ -118,37 +84,6 @@ const Signup = () => {
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onFocus={(e) => {
-                e.target.style.borderColor = styles.inputFocus.borderColor;
-                e.target.style.background = styles.inputFocus.background;
-                e.target.style.boxShadow = styles.inputFocus.boxShadow;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "#e5e7eb";
-                e.target.style.background = "#f9fafb";
-                e.target.style.boxShadow = "none";
-              }}
-              onMouseEnter={(e) => {
-                if (document.activeElement !== e.target) {
-                  e.target.style.borderColor = styles.inputHover.borderColor;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (document.activeElement !== e.target) {
-                  e.target.style.borderColor = "#e5e7eb";
-                }
-              }}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Username</label>
-            <input
-              type="text"
-              style={styles.input}
-              placeholder="Choose a username"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
               onFocus={(e) => {
                 e.target.style.borderColor = styles.inputFocus.borderColor;
                 e.target.style.background = styles.inputFocus.background;
@@ -237,15 +172,15 @@ const Signup = () => {
               e.target.style.transform = styles.buttonHover.transform;
             }}
           >
-            Create Account →
+            Signin
           </button>
 
           {/* Footer */}
           <div style={styles.footer}>
             <p style={styles.footerText}>
-              Already have an account?{" "}
-              <a href="/signin" style={styles.footerLink}>
-                Sign in
+              Dont have an account?{" "}
+              <a href="/signup" style={styles.footerLink}>
+                Sign up
               </a>
             </p>
           </div>
@@ -255,4 +190,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Signin;

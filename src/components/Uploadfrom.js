@@ -1,7 +1,6 @@
-import React from "react";
-import "./uploadform.css";
 import { useState } from "react";
 import Progress from "./Progress";
+import "./uploadform.css";
 function Uploadfrom() {
   const types = ["image/jpeg", "image/png"];
   const [file, setFile] = useState(null);
