@@ -28,7 +28,7 @@ const fetchUrl = (file, setProgress) => {
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log("progress", progress);
+
         setProgress(true); // 👈 progress while uploading
       },
       (error) => {
@@ -53,40 +53,43 @@ function Dashboard() {
   const [dragActive, setDragActive] = useState(false);
   const [url, setUrl] = useState(null);
 
-  console.log("userId", user);
   // Handle file selection
   const handleFileSelect = async (files) => {
     const imagesArray = Array.from(files);
-    console.log("filesssss", files);
+
     let newAddedImages = await Promise.all(
       imagesArray.map(async (file) => {
         if (file.type.startsWith("image/")) {
           let url = await fetchUrl(file, setProgress, setUrl);
-          console.log("helllo", url);
+
           const userId = auth.currentUser?.uid; // 👈 check here
           if (!userId) {
             throw new Error("User not logged in");
           }
           setProgress(false);
-          await addDoc(collection(db, "files"), {
+          const docRef = await addDoc(collection(db, "files"), {
             url: url,
             createdAt: serverTimestamp(),
             userId: user.uid,
             name: file.name,
             size: (file.size / 1024 / 1024).toFixed(2) + " MB",
+            path: `files/${file.name}`, // 👈 save this too
           });
+
+          // Use Firestore doc id instead of random
           return {
-            id: Date.now() + Math.random(),
+            id: docRef.id,
             url: url,
             name: file.name,
-            size: file.size / 1024 + " KB",
+            size: (file.size / 1024).toFixed(2) + " KB",
             createdAt: new Date().toLocaleDateString(),
             userId: user.uid,
+            path: `files/${file.name}`, // 👈 save this too
           };
         }
       })
     );
-    console.log("newAddedImages", newAddedImages);
+
     setImages((prev) => [...prev, ...newAddedImages]);
     toast.success("Image added successfully", {
       position: "top-right",
@@ -100,6 +103,7 @@ function Dashboard() {
   const logout = async () => {
     try {
       setError(null);
+      localStorage.clear();
       await signOut(auth);
     } catch (error) {
       setError(error.message);
@@ -108,10 +112,9 @@ function Dashboard() {
   };
   // Handle file input change
   const handleFileChange = (e) => {
-    console.log("first", e.target.files);
     handleFileSelect(e.target.files);
   };
-  console.log("imagess", images);
+
   // Handle drag and drop
   const handleDrag = (e) => {
     e.preventDefault();
@@ -131,7 +134,9 @@ function Dashboard() {
   };
 
   const deleteImage = async (id) => {
+    console.log("id", id);
     const imageToDelete = images.find((img) => img.id === id);
+    console.log("imageToDelete", imageToDelete);
 
     if (imageToDelete) {
       try {
@@ -144,13 +149,11 @@ function Dashboard() {
         if (imageToDelete.path) {
           const fileRef = ref(projectStorage, imageToDelete.path);
           await deleteObject(fileRef);
-          console.log("File deleted from storage");
         }
 
         // ✅ Delete from Firestore (if you’re storing image docs)
         if (imageToDelete.id) {
-          await deleteDoc(doc(db, "imagesCollection", imageToDelete.id));
-          console.log("Document deleted from Firestore");
+          await deleteDoc(doc(db, "files", imageToDelete.id));
         }
         toast.success("Image removed successfully", {
           position: "top-right",
@@ -168,7 +171,7 @@ function Dashboard() {
     // ✅ Return new state without the deleted image
     setImages((prev) => prev.filter((img) => img.id !== id));
   };
-  console.log("imagesss", images);
+
   // Calculate total size
   const totalSize = useMemo(
     () => images.reduce((total, img) => total + parseFloat(img.size), 0),
@@ -457,7 +460,6 @@ function Dashboard() {
   };
   useEffect(() => {
     if (user) {
-      console.log("userr-----<", user);
       const getUserFiles = async () => {
         try {
           const filesRef = collection(db, "files");
@@ -468,8 +470,8 @@ function Dashboard() {
             id: doc.id,
             ...doc.data(),
           }));
+          console.log("allFilesfirst", allFiles);
           setImages(allFiles);
-          console.log("allFiles", allFiles);
         } catch (Err) {
           console.log(Err);
         }

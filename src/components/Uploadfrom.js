@@ -7,7 +7,7 @@ function Uploadfrom() {
   const [error, setError] = useState(null);
   const fileChange = (e) => {
     let selected = e.target.files[0];
-    console.log(e.target.files[0]);
+
     if (selected && types.includes(selected.type)) {
       setFile(selected);
       setError("");
