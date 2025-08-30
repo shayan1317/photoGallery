@@ -34,7 +34,7 @@ const Signup = () => {
       );
 
       const user = userCredential.user;
-      console.log("user", user);
+
       let storageData = { email, accessToken: user?.accessToken, name };
       localStorage.setItem("user", storageData);
       await addDoc(collection(db, "users"), {
@@ -51,7 +51,6 @@ const Signup = () => {
         pauseOnHover: true,
         draggable: true,
       });
-      console.log("useradded");
     } catch (err) {
       console.log("err", err);
     }

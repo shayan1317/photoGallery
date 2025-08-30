@@ -32,7 +32,7 @@ const Signin = () => {
       );
 
       const user = userCredential.user;
-      console.log("usersignin", user);
+
       let storageData = {
         email,
         accessToken: user?.accessToken,

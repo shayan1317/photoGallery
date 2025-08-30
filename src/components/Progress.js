@@ -7,7 +7,6 @@ function Progress({ file, setFile }) {
   useEffect(() => {
     if (url) {
       setFile(null);
-      console.log("file uploaded");
     }
   }, [url]);
   return <div className="progress-bar" style={{ width: progress + "%" }}></div>;
