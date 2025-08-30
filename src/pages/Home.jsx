@@ -7,7 +7,9 @@ import Footer from "../components/Footer";
 import Testimonials from "../components/Testimonials.jsx";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthProvider.jsx";
 const Home = () => {
+  const { user } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
   const [currentFeature, setCurrentFeature] = useState(0);
   const navigate = useNavigate();
@@ -71,6 +73,12 @@ const Home = () => {
       behavior: "smooth",
     });
   };
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard"); // already logged in, redirect away
+    }
+  }, [user, navigate]);
   return (
     <div className="landing-page">
       {/* Navigation Header */}

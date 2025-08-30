@@ -4,11 +4,13 @@ import { toast } from "react-toastify";
 import { auth } from "../firebase/config";
 import { styles } from "./styles";
 import { Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthProvider";
+import { useEffect } from "react";
 const Signin = () => {
   // Local state banaya for controlled inputs
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-
+  const { user } = useAuth();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -30,7 +32,7 @@ const Signin = () => {
       );
 
       const user = userCredential.user;
-      console.log("user", user);
+      console.log("usersignin", user);
       let storageData = {
         email,
         accessToken: user?.accessToken,
@@ -49,6 +51,14 @@ const Signin = () => {
       navigate("/dashboard");
     } catch (err) {
       console.log("err", err);
+      toast.error(err.message, {
+        position: "top-right",
+        autoClose: 3000, // 3 seconds
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
 
     // Agar sab filled hain, to error hata do
@@ -56,7 +66,11 @@ const Signin = () => {
 
     // Parent function ko call karo
   };
-
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard"); // already logged in, redirect away
+    }
+  }, [user, navigate]);
   return (
     <div style={styles.container}>
       <div style={styles.formWrapper}>

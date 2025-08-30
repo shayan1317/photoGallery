@@ -6,13 +6,18 @@ import {
   serverTimestamp,
   where,
 } from "firebase/firestore";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import useStorage from "../components/hooks/useStorage";
 import { projectStorage } from "../firebase/config";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db } from "../firebase/config";
 import { auth } from "../firebase/config";
 import { signOut } from "firebase/auth";
+import { useAuth } from "../components/AuthProvider";
+import { deleteDoc, doc } from "firebase/firestore";
+import { deleteObject } from "firebase/storage";
+import { toast } from "react-toastify";
+import Loader from "../components/Loader";
 const fetchUrl = (file, setProgress) => {
   return new Promise((resolve, reject) => {
     const storageRef = ref(projectStorage, `files/${file.name}`);
@@ -23,7 +28,8 @@ const fetchUrl = (file, setProgress) => {
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setProgress(progress); // 👈 progress while uploading
+        console.log("progress", progress);
+        setProgress(true); // 👈 progress while uploading
       },
       (error) => {
         reject(error); // 👈 upload failed
@@ -40,17 +46,18 @@ const fetchUrl = (file, setProgress) => {
   });
 };
 function Dashboard() {
+  const { user } = useAuth();
   const [progress, setProgress] = useState("");
   const [error, setError] = useState(null);
   const [images, setImages] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [url, setUrl] = useState(null);
-  const userId = auth?.currentUser?.uid;
-  console.log("userId", userId);
+
+  console.log("userId", user);
   // Handle file selection
   const handleFileSelect = async (files) => {
     const imagesArray = Array.from(files);
-
+    console.log("filesssss", files);
     let newAddedImages = await Promise.all(
       imagesArray.map(async (file) => {
         if (file.type.startsWith("image/")) {
@@ -60,24 +67,35 @@ function Dashboard() {
           if (!userId) {
             throw new Error("User not logged in");
           }
-
+          setProgress(false);
           await addDoc(collection(db, "files"), {
             url: url,
             createdAt: serverTimestamp(),
-            userId: userId,
+            userId: user.uid,
+            name: file.name,
+            size: (file.size / 1024 / 1024).toFixed(2) + " MB",
           });
           return {
             id: Date.now() + Math.random(),
             url: url,
             name: file.name,
-            size: (file.size / 1024 / 1024).toFixed(2) + " MB",
-            uploadDate: new Date().toLocaleDateString(),
+            size: file.size / 1024 + " KB",
+            createdAt: new Date().toLocaleDateString(),
+            userId: user.uid,
           };
         }
       })
     );
     console.log("newAddedImages", newAddedImages);
     setImages((prev) => [...prev, ...newAddedImages]);
+    toast.success("Image added successfully", {
+      position: "top-right",
+      autoClose: 3000, // 3 seconds
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
   };
   const logout = async () => {
     try {
@@ -112,23 +130,49 @@ function Dashboard() {
     handleFileSelect(e.dataTransfer.files);
   };
 
-  // Delete image
-  const deleteImage = (id) => {
-    setImages((prev) => {
-      // Find the image to delete
-      const imageToDelete = prev.find((img) => img.id === id);
-      if (imageToDelete) {
-        URL.revokeObjectURL(imageToDelete.url); // Free memory
-      }
-      // Remove the image from state
-      return prev.filter((img) => img.id !== id);
-    });
-  };
+  const deleteImage = async (id) => {
+    const imageToDelete = images.find((img) => img.id === id);
 
+    if (imageToDelete) {
+      try {
+        // ✅ Free memory if it was a blob URL
+        if (imageToDelete.url.startsWith("blob:")) {
+          URL.revokeObjectURL(imageToDelete.url);
+        }
+
+        // ✅ Delete from Firebase Storage (if path is stored)
+        if (imageToDelete.path) {
+          const fileRef = ref(projectStorage, imageToDelete.path);
+          await deleteObject(fileRef);
+          console.log("File deleted from storage");
+        }
+
+        // ✅ Delete from Firestore (if you’re storing image docs)
+        if (imageToDelete.id) {
+          await deleteDoc(doc(db, "imagesCollection", imageToDelete.id));
+          console.log("Document deleted from Firestore");
+        }
+        toast.success("Image removed successfully", {
+          position: "top-right",
+          autoClose: 3000, // 3 seconds
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } catch (error) {
+        console.error("Error deleting image:", error);
+      }
+    }
+
+    // ✅ Return new state without the deleted image
+    setImages((prev) => prev.filter((img) => img.id !== id));
+  };
+  console.log("imagesss", images);
   // Calculate total size
-  const totalSize = images.reduce(
-    (total, img) => total + parseFloat(img.size),
-    0
+  const totalSize = useMemo(
+    () => images.reduce((total, img) => total + parseFloat(img.size), 0),
+    [images.length]
   );
 
   const styles = {
@@ -412,23 +456,31 @@ function Dashboard() {
     },
   };
   useEffect(() => {
-    if (userId) {
+    if (user) {
+      console.log("userr-----<", user);
       const getUserFiles = async () => {
         try {
           const filesRef = collection(db, "files");
-          const filter = query(filesRef, where("userId", "==", userId));
+          const filter = query(filesRef, where("userId", "==", user.uid));
           const userFiles = await getDocs(filter);
-          console.log(userFiles?.docs);
+
+          let allFiles = userFiles.docs?.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setImages(allFiles);
+          console.log("allFiles", allFiles);
         } catch (Err) {
           console.log(Err);
         }
       };
       getUserFiles();
     }
-  }, [userId]);
+  }, [user]);
 
   return (
     <div style={styles.dashboard}>
+      {progress && <Loader />}
       <div style={styles.container}>
         {/* Header */}
         <div style={styles.header}>
@@ -456,7 +508,7 @@ function Dashboard() {
           <div style={styles.statCard}>
             <div style={styles.statIcon}>💾</div>
             <div style={styles.statContent}>
-              <div style={styles.statNumber}>{totalSize.toFixed(1)} B</div>
+              <div style={styles.statNumber}>{totalSize.toFixed(1)} KB</div>
               <div style={styles.statLabel}>Total Size</div>
             </div>
           </div>

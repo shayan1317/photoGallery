@@ -3,7 +3,7 @@ import { useAuth } from "./AuthProvider";
 import { Navigate } from "react-router-dom";
 const ProtectedRoutes = ({ children }) => {
   const { user } = useAuth();
-  console.log("user", user);
+  console.log("user=====>", user);
 
   if (!user) {
     return <Navigate to="/signin" replace />;

@@ -5,6 +5,8 @@ import { addDoc, collection } from "firebase/firestore";
 import { styles } from "./styles";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthProvider";
+import { useEffect } from "react";
 const Signup = () => {
   const navigate = useNavigate();
   // Local state banaya for controlled inputs
@@ -13,7 +15,7 @@ const Signup = () => {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const { user } = useAuth();
   // Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,6 +62,11 @@ const Signup = () => {
     // Parent function ko call karo
   };
 
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard"); // already logged in, redirect away
+    }
+  }, [user, navigate]);
   return (
     <div style={styles.container}>
       <div style={styles.formWrapper}>
